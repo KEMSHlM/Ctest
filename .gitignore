@@ -1,0 +1,9 @@
+a.out
+test.c
+makefile
+*.o
+.vscode
+*.txt
+exe
+*.dat
+*.png
