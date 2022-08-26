@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define NUM 5
 // define は，小数点をつけないとint型，つけるとdouble型になる
 #define Xmin -5.0
 #define Xmax 10.0
@@ -15,33 +14,47 @@ typedef struct {
     double y;
 }point;
 
-double lagrange_inter(double, point *);
-double lagrange_diff(double, point *);
-/* for debug */
-void plot(double (*funcptr)(double, point *));
-
+#define NUM 5
 point s[NUM] = {{1, -3},
                 {2, -1},
                 {3, 1},
                 {4, 2},
-                {8, 6}};
+                {5, 3}};
+
+double lagrange_inter(double, point *, int num);
+double lagrange_diff(double, point *, int num);
+point *point_diffCal(point *s);
+/* for debug */
+void plot(point *s, double (*funcptr)(double, point *, int num), int);
 
 int main (void) {
     int i;
-    double (*funcptr)(double, point *);
+
+    point *r = point_diffCal(s);
     
-    funcptr = lagrange_diff;
-    plot(funcptr);
+    plot(r, lagrange_inter, NUM-1);
 
     return 0;
 }
 
-double xconb_inter(int i, double x, point *s)
+point* point_diffCal(point *s)
+{   
+    point *r = malloc(sizeof (point) * NUM-1);
+
+    for (int i=0; i<NUM-1; i++) {
+        r[i].x = (s[i].x + s[i+1].x) / 2;
+        r[i].y = (s[i+1].y - s[i].y) / (s[i+1].x - s[i].x);       
+    }
+
+    return r;
+}
+
+double xconb_inter(int i, double x, point *s, int num)
 {
     double ans = 1;
     double sum = 1;
 
-    for(int j=0; j<NUM; j++) {
+    for(int j=0; j<num; j++) {
         if (i==j) continue;
         ans *= (x - s[j].x);
         sum *= (s[i].x - s[j].x);        
@@ -49,16 +62,16 @@ double xconb_inter(int i, double x, point *s)
     return ans / sum;
 }
 
-double xconb_diff(int i, double x, point *s)
+double xconb_diff(int i, double x, point *s, int num)
 {
     double ans = 0;
     double sum1 = 1;
     double sum2 = 1;
 
-    for (int j=0; j<NUM; j++) {
+    for (int j=0; j<num; j++) {
         if (j==i) continue;
         sum1 *= (s[i].x - s[j].x);
-        for (int k=0; k<NUM; k++) {
+        for (int k=0; k<num; k++) {
             if (k==i || k==j) continue;
             sum2 *= (x - s[k].x);
         }
@@ -69,23 +82,23 @@ double xconb_diff(int i, double x, point *s)
 }
 
 /* complete */
-double lagrange_inter(double x, point *s)
+double lagrange_inter(double x, point *s, int num)
 {
     double ans = 0;
     double ai;
-    for (int i=0; i<NUM; i++) {
-        ai = xconb_inter(i, x, s);
+    for (int i=0; i<num; i++) {
+        ai = xconb_inter(i, x, s, num);
         ans += s[i].y * ai;
     }
     return ans;
 }
 
-double lagrange_diff(double x, point *s)
+double lagrange_diff(double x, point *s, int num)
 {
     double ans = 0;
     double ai;
-    for (int i=0; i<NUM; i++) {
-        ai = xconb_diff(i, x, s);
+    for (int i=0; i<num; i++) {
+        ai = xconb_diff(i, x, s, num);
         ans += s[i].y * ai;
     }
     return ans;
@@ -103,7 +116,7 @@ void plot_init(FILE *gp)
     fprintf(gp, "set yrange [%2.1lf:%2.1lf]\n", Ymin, Ymax);
 }
 
-void plot(double (*funcptr)(double, point *))
+void plot(point *s, double (*funcptr)(double, point *, int), int num)
 {
     FILE *fp;
     FILE *fp2;
@@ -122,10 +135,10 @@ void plot(double (*funcptr)(double, point *))
     double dx = (Xmax - Xmin) / (double) N;
 
     for (int i=0; i<=N; i++) {
-		fprintf(fp, "%lf %f\n", Xmin + (int)i * dx, funcptr(Xmin + (int)i * dx, s)); 
+		fprintf(fp, "%lf %f\n", Xmin + (int)i * dx, funcptr(Xmin + (int)i * dx, s, num)); 
 	}
     fprintf(fp, "\n\n");
-    for (int i=0; i<NUM; i++) {
+    for (int i=0; i<num; i++) {
         fprintf(fp2, "%lf %lf\n", s[i].x, s[i].y);
     }
     fprintf(fp2, "\n\n");
