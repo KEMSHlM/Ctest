@@ -14,12 +14,11 @@ typedef struct {
     double y;
 }point;
 
-#define NUM 5
-point s[NUM] = {{1, -3},
-                {2, -1},
-                {3, 1},
-                {4, 2},
-                {5, 3}};
+#define NUM 2
+point s[NUM] =  {
+                    {0.0, 3},
+                    {0.5, 1},
+                };
 
 double lagrange_inter(double, point *, int num);
 double lagrange_diff(double, point *, int num);
@@ -29,10 +28,12 @@ void plot(point *s, double (*funcptr)(double, point *, int num), int);
 
 int main (void) {
     int i;
+    double ans;
 
-    point *r = point_diffCal(s);
-    
-    plot(r, lagrange_inter, NUM-1);
+    ans = lagrange_diff(1.0, s, NUM);
+    // plot(s, lagrange_inter, NUM);
+
+    printf("ans = %lf\n", ans);
 
     return 0;
 }
@@ -89,6 +90,7 @@ double lagrange_inter(double x, point *s, int num)
     for (int i=0; i<num; i++) {
         ai = xconb_inter(i, x, s, num);
         ans += s[i].y * ai;
+        printf("a[%d]=%lf\n", i, ai);
     }
     return ans;
 }
@@ -100,6 +102,7 @@ double lagrange_diff(double x, point *s, int num)
     for (int i=0; i<num; i++) {
         ai = xconb_diff(i, x, s, num);
         ans += s[i].y * ai;
+        printf("a[%d]=%lf\n", i, ai);
     }
     return ans;
 }
